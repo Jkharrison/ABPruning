@@ -407,16 +407,21 @@ class ChessState {
         // Able to accept arguments.
         int depthFirstAI = Integer.parseInt(args[0]);
         int depthSecondAI= Integer.parseInt(args[1]);
-        if(depthFirstAI < 0 || depthSecondAI < 0)
+        if(depthFirstAI < 0 || depthSecondAI < 0) {
             throw new RuntimeException("Depth should not be negative");
-        if(depthFirstAI == 0)
+		}
+        if(depthFirstAI == 0) {
             System.out.println("Human Player");
-        else
+		}
+        else {
             System.out.println("AI at depth: " + depthFirstAI);
-        if(depthSecondAI == 0)
+		}
+        if(depthSecondAI == 0) {
             System.out.println("Human Player");
-        else
+		}
+        else {
             System.out.println("AI at depth: " + depthSecondAI);
+		}
 		ChessState s = new ChessState();
 		s.resetBoard();
 		s.printBoard(System.out);
