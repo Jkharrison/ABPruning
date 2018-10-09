@@ -26,11 +26,25 @@ class ChessState {
 		}
 		if(isMax) {
 			int best = Integer.MIN_VALUE;
-			// ChessMoveIterator it = state.iterator(state.isWhite());
+			for(int i = 0; i < 7; i++) {
+				for(int j = 0; j < 7; j++) {
+					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i,j));
+					while(it.hasNext()) {
+
+					}
+				}
+			}
 		}
 		else {
 			int best = Integer.MAX_VALUE;
-			// ChessMoveIterator it = state.iterator(state.isWhite());
+			for(int i = 0; i < 7; i++) {
+				for(int j = 0; j < 7; j++) {
+					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i, j));
+					while(it.hasNext()) {
+						
+					}
+				}
+			}
 		}
 		return 0;
 	}
