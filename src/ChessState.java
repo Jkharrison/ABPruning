@@ -19,6 +19,19 @@ class ChessState {
 	int[] m_rows;
 
 	public static int alphaBetaPruning(ChessState state, int depth, int alpha, int beta, boolean isMax) {
+		if(depth == 0) {
+			// Return the heuristic of the state.
+			Random r = new Random();
+			return state.heuristic(r);
+		}
+		if(isMax) {
+			int best = Integer.MIN_VALUE;
+			// ChessMoveIterator it = state.iterator(state.isWhite());
+		}
+		else {
+			int best = Integer.MAX_VALUE;
+			// ChessMoveIterator it = state.iterator(state.isWhite());
+		}
 		return 0;
 	}
 	public static int[] findBestMove(ChessState state) {
