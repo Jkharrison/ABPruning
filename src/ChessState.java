@@ -18,6 +18,13 @@ class ChessState {
 
 	int[] m_rows;
 
+	public static int alphaBetaPruning(ChessState state, int depth, int alpha, int beta, boolean isMax) {
+		return 0;
+	}
+	public static int[] findBestMove(ChessState state) {
+		return new int[]{0, 0};
+	}
+
 	ChessState() {
 		m_rows = new int[8];
 		resetBoard();
