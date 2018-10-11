@@ -30,7 +30,7 @@ class ChessState {
 				for(int j = 0; j < 7; j++) {
 					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i,j));
 					while(it.hasNext()) {
-
+						best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 					}
 				}
 			}
@@ -41,7 +41,7 @@ class ChessState {
 				for(int j = 0; j < 7; j++) {
 					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i, j));
 					while(it.hasNext()) {
-						
+						best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 					}
 				}
 			}
@@ -458,9 +458,35 @@ class ChessState {
 		}
 		ChessState s = new ChessState();
 		s.resetBoard();
-		s.printBoard(System.out);
-		System.out.println();
-		s.move(1/*B*/, 0/*1*/, 2/*C*/, 2/*3*/);
-		s.printBoard(System.out);
+		// s.printBoard(System.out);
+		// System.out.println();
+		// s.move(1/*B*/, 0/*1*/, 2/*C*/, 2/*3*/);
+		// s.printBoard(System.out);
+		int counter = 0;
+		while(true) {
+			if(counter % 2 == 0) {
+				// First player's turn
+				s.printBoard(System.out);
+				System.out.println();
+				if(depthFirstAI > 0) {
+					// Call ABPruning
+				}
+				else if(depthFirstAI == 0) {
+					// Allow them to input a string for their moves.
+				}
+
+			}
+			else {
+				s.printBoard(System.out);
+				System.out.println();
+				if(depthSecondAI > 0) {
+					// Call ABPruning
+				}
+				else if(depthSecondAI == 0) {
+					// Allow them to input a string for their moves.
+				}
+			}
+			counter++;
+		}
 	}
 }
