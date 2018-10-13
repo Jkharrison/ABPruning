@@ -37,6 +37,9 @@ class ChessState {
 				int h = childState.heuristic(new Randon());
 				m = it.next();
 				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
+				alpha = Math.max(alpha, best);
+				if(alpha >= beta)
+					break;
 			}
 			return best;
 		}
@@ -49,7 +52,10 @@ class ChessState {
 				ChessState childState = new ChildState(state);
 				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
 				int h = childState.heuristic(new Random());
-				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
+				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
+				beta = Math.min(beta, best);
+				if(alpha >= beta)
+					break;	
 			}
 			return best;
 		}
