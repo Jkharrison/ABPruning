@@ -19,6 +19,9 @@ class ChessState {
 	int[] m_rows;
 
 	public static int alphaBetaPruning(ChessState state, int depth, int alpha, int beta, boolean isMax) {
+		if(state == null) {
+			throw new IllegalArgumentException("The state is null, unable to run algorithm on invalid state");
+		}
 		if(depth == 0) {
 			// Return the heuristic of the state.
 			Random r = new Random();
@@ -26,30 +29,42 @@ class ChessState {
 		}
 		if(isMax) {
 			int best = Integer.MIN_VALUE;
-			for(int i = 0; i < 7; i++) {
-				for(int j = 0; j < 7; j++) {
-					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i,j));
-					while(it.hasNext()) {
-						best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
-					}
-				}
+			ChessMoveIterator it = state.iterator(true);
+			ChessState.ChessMove m;
+			while(it.hasNext()) {
+				ChessState childState = new ChildState(state);
+				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
+				int h = childState.heuristic(new Randon());
+				m = it.next();
+				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
 			}
+			return best;
 		}
 		else {
 			int best = Integer.MAX_VALUE;
-			for(int i = 0; i < 7; i++) {
-				for(int j = 0; j < 7; j++) {
-					ChessMoveIterator it = new ChessState.ChessMoveIterator(state, state.isWhite(i, j));
-					while(it.hasNext()) {
-						best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
-					}
-				}
+			ChessMoveIterator it = state.iterator(false);
+			ChessState.ChessMove m;
+			while(it.hasNext()) {
+				m = it.next();
+				ChessState childState = new ChildState(state);
+				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
+				int h = childState.heuristic(new Random());
+				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
 			}
+			return best;
 		}
-		return 0;
+		return 0; // Should never reach this case.
 	}
-	public static int[] findBestMove(ChessState state) {
-		return new int[]{0, 0};
+	public static int[] findBestMove(ChessState state, int depth) {
+		// From the current State, get the best piece to move.
+		// Return the x cord, y cord, for the place you want to move.
+		/* INITIAL CALL */
+		int [] bestMove = new int[4];
+		for(int i = 0; i < bestMove.length; i++) {
+			bestMove[i] = -1;
+		}
+		alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+		return bestMove;
 	}
 
 	ChessState() {
