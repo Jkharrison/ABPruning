@@ -1,7 +1,7 @@
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Random;
-
+import java.util.Scanner;
 /// Represents the state of a chess game
 class ChessState {
 	public static final int MAX_PIECE_MOVES = 27;
@@ -29,13 +29,13 @@ class ChessState {
 		}
 		if(isMax) {
 			int best = Integer.MIN_VALUE;
-			ChessMoveIterator it = state.iterator(true);
+			ChessMoveIterator it = state.iterator(true); // if true, checks for white piece.
 			ChessState.ChessMove m;
 			while(it.hasNext()) {
-				ChessState childState = new ChildState(state);
-				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
-				int h = childState.heuristic(new Randon());
+				ChessState childState = new ChessState(state);
 				m = it.next();
+				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
+				int h = childState.heuristic(new Random());
 				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
 				alpha = Math.max(alpha, best);
 				if(alpha >= beta)
@@ -45,11 +45,11 @@ class ChessState {
 		}
 		else {
 			int best = Integer.MAX_VALUE;
-			ChessMoveIterator it = state.iterator(false);
+			ChessMoveIterator it = state.iterator(false); // Checks for black piece.
 			ChessState.ChessMove m;
 			while(it.hasNext()) {
 				m = it.next();
-				ChessState childState = new ChildState(state);
+				ChessState childState = new ChessState(state);
 				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
 				int h = childState.heuristic(new Random());
 				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
@@ -59,17 +59,16 @@ class ChessState {
 			}
 			return best;
 		}
-		return 0; // Should never reach this case.
 	}
 	public static int[] findBestMove(ChessState state, int depth) {
 		// From the current State, get the best piece to move.
 		// Return the x cord, y cord, for the place you want to move.
 		/* INITIAL CALL */
-		int [] bestMove = new int[4];
+		int [] bestMove = new int[4]; // {1, 1, 0, 2}
 		for(int i = 0; i < bestMove.length; i++) {
 			bestMove[i] = -1;
 		}
-		alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+		 // alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true); // Calling from white standpoint.
 		return bestMove;
 	}
 
@@ -321,8 +320,11 @@ class ChessState {
 	/// the king that was taken and return true to indicate that the move
 	/// ended the game.
 	boolean move(int xSrc, int ySrc, int xDest, int yDest) {
-		if(xSrc < 0 || xSrc >= 8 || ySrc < 0 || ySrc >= 8)
+		if(xSrc < 0 || xSrc >= 8 || ySrc < 0 || ySrc >= 8) {
+			System.out.println("xSrc: " + xSrc);
+			System.out.println("ySrc: " + ySrc);
 			throw new RuntimeException("out of range");
+		}
 		if(xDest < 0 || xDest >= 8 || yDest < 0 || yDest >= 8)
 			throw new RuntimeException("out of range");
 		int target = getPiece(xDest, yDest);
@@ -456,7 +458,33 @@ class ChessState {
 			return m;
 		}
 	}
-
+	public boolean whiteWins() {
+		for(int j = 7; j >= 0; j--) {
+			for(int i = 0; i < 7; i++) {
+				int p = this.getPiece(i, j);
+				if(p != None) {
+					if(!this.isWhite(i, j) && p == King) {
+						return false;
+					}
+				}
+			}
+		}
+		System.out.println("Should not be getting here that damn soon");
+		return true;
+	}
+	public boolean blackWins() {
+		for(int j = 7; j >= 0; j--) {
+			for(int i = 0; j < 7; i++) {
+				int p = this.getPiece(i, j);
+				if(p != None) {
+					if(this.isWhite(i, j) && p == King)
+						return false;
+				}
+			}
+		}
+		System.out.println("Should not be getting here that damn soon");
+		return true;
+	} 
 
 	public static void main(String[] args) {
         // Able to accept arguments.
@@ -479,32 +507,122 @@ class ChessState {
 		}
 		ChessState s = new ChessState();
 		s.resetBoard();
-		// s.printBoard(System.out);
-		// System.out.println();
-		// s.move(1/*B*/, 0/*1*/, 2/*C*/, 2/*3*/);
-		// s.printBoard(System.out);
+		Scanner reader = new Scanner(System.in);
 		int counter = 0;
+		boolean whiteWins = false;
+		boolean blackWins = false;
 		while(true) {
 			if(counter % 2 == 0) {
 				// First player's turn
 				s.printBoard(System.out);
 				System.out.println();
 				if(depthFirstAI > 0) {
-					// Call ABPruning
+					// Call ABPruning make isMax true, because calling from white standpoint.
+					// int[] moves = findBestMove(s, depthFirstAI);
+					// s.move(moves[0], moves[1], moves[2], moves[3]);
 				}
 				else if(depthFirstAI == 0) {
-					// Allow them to input a string for their moves.
+					System.out.println("Please input the piece location, and the location you want to move it to (White Player)");
+					String str = reader.nextLine();
+					int colSrc;
+					if(str.equals("q") || str.equals("Q"))
+						System.exit(0);
+					if(str.charAt(0) == 'A' || str.charAt(0) == 'a')
+						colSrc = 0;
+					else if(str.charAt(0) == 'B' || str.charAt(0) == 'b')
+						colSrc = 1;
+					else if(str.charAt(0) == 'C' || str.charAt(0) == 'c')
+						colSrc = 2;
+					else if(str.charAt(0) == 'D' || str.charAt(0) == 'd')
+						colSrc = 3;
+					else if(str.charAt(0) == 'E' || str.charAt(0) == 'e')
+						colSrc = 4;
+					else if(str.charAt(0) == 'F' || str.charAt(0) == 'f')
+						colSrc = 5;
+					else if(str.charAt(0) == 'G' || str.charAt(0) == 'g')
+						colSrc = 6;
+					else if(str.charAt(0) == 'H' || str.charAt(0) == 'h')
+						colSrc = 7;
+					else
+						colSrc = 0;
+					int rowSrc = Integer.parseInt(String.valueOf(str.charAt(1))) - 1;
+					int colDest;
+					if(str.charAt(2) == 'A' || str.charAt(2) == 'a')
+						colDest = 0;
+					else if(str.charAt(2) == 'B' || str.charAt(2) == 'b')
+						colDest = 1;
+					else if(str.charAt(2) == 'C' || str.charAt(2) == 'c')
+						colDest = 2;
+					else if(str.charAt(2) == 'D' || str.charAt(2) == 'd')
+						colDest = 3;
+					else if(str.charAt(2) == 'E' || str.charAt(2) == 'e')
+						colDest = 4;
+					else if(str.charAt(2) == 'F' || str.charAt(2) == 'f')
+						colDest = 5;
+					else if(str.charAt(2) == 'G' || str.charAt(2) == 'g')
+						colDest = 6;
+					else if(str.charAt(2) == 'H' || str.charAt(2) == 'h')
+						colDest = 7;
+					else
+						colDest = 0;
+					int rowDest = Integer.parseInt(String.valueOf(str.charAt(3))) - 1;
+					s.move(colSrc, rowSrc, colDest, rowDest);
 				}
-
 			}
 			else {
 				s.printBoard(System.out);
 				System.out.println();
 				if(depthSecondAI > 0) {
-					// Call ABPruning
+					int[] moves = findBestMove(s, depthSecondAI);
+					s.move(moves[0], moves[1], moves[2], moves[3]);
+					// Call ABPruning, calling from black piece standpoint.
 				}
 				else if(depthSecondAI == 0) {
-					// Allow them to input a string for their moves.
+					System.out.println("Please input the piece location, and the location you want to move it to (Black Player)");
+					String str = reader.nextLine();
+					int colSrc;
+					if(str.equals("q") || str.equals("Q"))
+						System.exit(0);
+					if(str.charAt(0) == 'A' || str.charAt(0) == 'a')
+						colSrc = 0;
+					else if(str.charAt(0) == 'B' || str.charAt(0) == 'b')
+						colSrc = 1;
+					else if(str.charAt(0) == 'C' || str.charAt(0) == 'c')
+						colSrc = 2;
+					else if(str.charAt(0) == 'D' || str.charAt(0) == 'd')
+						colSrc = 3;
+					else if(str.charAt(0) == 'E' || str.charAt(0) == 'e')
+						colSrc = 4;
+					else if(str.charAt(0) == 'F' || str.charAt(0) == 'f')
+						colSrc = 5;
+					else if(str.charAt(0) == 'G' || str.charAt(0) == 'g')
+						colSrc = 6;
+					else if(str.charAt(0) == 'H' || str.charAt(0) == 'h')
+						colSrc = 7;
+					else
+						colSrc = 0;
+					int rowSrc = Integer.parseInt(String.valueOf(str.charAt(1))) - 1;
+					int colDest;
+					if(str.charAt(2) == 'A' || str.charAt(2) == 'a')
+						colDest = 0;
+					else if(str.charAt(2) == 'B' || str.charAt(2) == 'b')
+						colDest = 1;
+					else if(str.charAt(2) == 'C' || str.charAt(2) == 'c')
+						colDest = 2;
+					else if(str.charAt(2) == 'D' || str.charAt(2) == 'd')
+						colDest = 3;
+					else if(str.charAt(2) == 'E' || str.charAt(2) == 'e')
+						colDest = 4;
+					else if(str.charAt(2) == 'F' || str.charAt(2) == 'f')
+						colDest = 5;
+					else if(str.charAt(2) == 'G' || str.charAt(2) == 'g')
+						colDest = 6;
+					else if(str.charAt(2) == 'H' || str.charAt(2) == 'h')
+						colDest = 7;
+					else
+						colDest = 0;
+					int rowDest = Integer.parseInt(String.valueOf(str.charAt(3))) - 1;
+					s.move(colSrc, rowSrc, colDest, rowDest);
 				}
 			}
 			counter++;
