@@ -15,7 +15,7 @@ class ChessState {
 	public static final int PieceMask = 7;
 	public static final int WhiteMask = 8;
 	public static final int AllMask = 15;
-
+	public static Random r = new Random();
 	int[] m_rows;
 
 	public static int alphaBetaPruning(ChessState state, int depth, int alpha, int beta, boolean isMax) {
@@ -24,7 +24,7 @@ class ChessState {
 		}
 		if(depth == 0) {
 			// Return the heuristic of the state.
-			Random r = new Random();
+			// Random r = new Random();
 			return state.heuristic(r);
 		}
 		if(isMax) {
@@ -35,7 +35,7 @@ class ChessState {
 				ChessState childState = new ChessState(state);
 				m = it.next();
 				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
-				int h = childState.heuristic(new Random());
+				int h = childState.heuristic(r);
 				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 				alpha = Math.max(alpha, best);
 				if(alpha >= beta)
@@ -51,7 +51,7 @@ class ChessState {
 				m = it.next();
 				ChessState childState = new ChessState(state);
 				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
-				int h = childState.heuristic(new Random());
+				int h = childState.heuristic(r);
 				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 				beta = Math.min(beta, best);
 				if(alpha >= beta)
@@ -536,6 +536,9 @@ class ChessState {
 					// Call ABPruning make isMax true, because calling from white standpoint.
 					// int[] moves = findBestMove(s, depthFirstAI);
 					// s.move(moves[0], moves[1], moves[2], moves[3]);
+					ChessMove moveForFirstPlayer = findBestMove(s, depthFirstAI, true);
+					System.out.println("White turn");
+					s.move(moveForFirstPlayer.xSource, moveForFirstPlayer.ySource, moveForFirstPlayer.xDest, moveForFirstPlayer.yDest);
 				}
 				else if(depthFirstAI == 0) {
 					System.out.println("Please input the piece location, and the location you want to move it to (White Player)");
@@ -594,6 +597,9 @@ class ChessState {
 				System.out.println();
 				if(depthSecondAI > 0) {
 					// int[] moves = findBestMove(s, depthSecondAI);
+					ChessMove moveForSecondPlayer = findBestMove(s, depthSecondAI, false);
+					System.out.println("Black turn");
+					s.move(moveForSecondPlayer.xSource, moveForSecondPlayer.ySource, moveForSecondPlayer.xDest, moveForSecondPlayer.yDest);
 					// s.move(moves[0], moves[1], moves[2], moves[3]);
 					// Call ABPruning, calling from black piece standpoint.
 				}
