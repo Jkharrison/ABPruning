@@ -60,15 +60,32 @@ class ChessState {
 			return best;
 		}
 	}
-	public static int[] findBestMove(ChessState state, int depth) {
-		// From the current State, get the best piece to move.
-		// Return the x cord, y cord, for the place you want to move.
-		/* INITIAL CALL */
-		int [] bestMove = new int[4]; // {1, 1, 0, 2}
-		for(int i = 0; i < bestMove.length; i++) {
-			bestMove[i] = -1;
+	// public static int[] findBestMove(ChessState state, int depth) {
+	// 	// From the current State, get the best piece to move.
+	// 	// Return the x cord, y cord, for the place you want to move.
+	// 	/* INITIAL CALL */
+	// 	int [] bestMove = new int[4]; // {1, 1, 0, 2}
+	// 	for(int i = 0; i < bestMove.length; i++) {
+	// 		bestMove[i] = -1;
+	// 	}
+	// 	 // alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true); // Calling from white standpoint.
+	// 	return bestMove;
+	// }
+	public static ChessState.ChessMove findBestMove(ChessState state, int depth, boolean isWhite) {
+		int maxMove = Integer.MIN_VALUE;
+		ChessMoveIterator it = state.iterator(isWhite);
+		ChessMove bestMove = new ChessMove();
+		ChessMove testMove = new ChessMove();
+		while(it.hasNext()) {
+			ChessState temp = new ChessState(state);
+			testMove = it.next();
+			temp.move(testMove.xSource, testMove.ySource, testMove.xDest, testMove.yDest);
+			int testVal = temp.alphaBetaPruning(temp, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, isWhite);
+			if(testVal > maxMove) {
+				bestMove = testMove;
+				maxMove = testVal;
+			}
 		}
-		 // alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true); // Calling from white standpoint.
 		return bestMove;
 	}
 
@@ -506,6 +523,7 @@ class ChessState {
 		ChessState s = new ChessState();
 		s.resetBoard();
 		Scanner reader = new Scanner(System.in);
+		System.out.println(alphaBetaPruning(s, 5, Integer.MIN_VALUE, Integer.MAX_VALUE, true));
 		int counter = 0;
 		boolean whiteWins = false;
 		boolean blackWins = false;
@@ -575,8 +593,8 @@ class ChessState {
 				s.printBoard(System.out);
 				System.out.println();
 				if(depthSecondAI > 0) {
-					int[] moves = findBestMove(s, depthSecondAI);
-					s.move(moves[0], moves[1], moves[2], moves[3]);
+					// int[] moves = findBestMove(s, depthSecondAI);
+					// s.move(moves[0], moves[1], moves[2], moves[3]);
 					// Call ABPruning, calling from black piece standpoint.
 				}
 				else if(depthSecondAI == 0) {
