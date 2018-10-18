@@ -36,7 +36,7 @@ class ChessState {
 				m = it.next();
 				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
 				int h = childState.heuristic(new Random());
-				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));	
+				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 				alpha = Math.max(alpha, best);
 				if(alpha >= beta)
 					break;
@@ -55,7 +55,7 @@ class ChessState {
 				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
 				beta = Math.min(beta, best);
 				if(alpha >= beta)
-					break;	
+					break;
 			}
 			return best;
 		}
@@ -460,7 +460,7 @@ class ChessState {
 	}
 	public boolean whiteWins() {
 		for(int j = 7; j >= 0; j--) {
-			for(int i = 0; i < 7; i++) {
+			for(int i = 0; i < 8; i++) {
 				int p = this.getPiece(i, j);
 				if(p != None) {
 					if(!this.isWhite(i, j) && p == King) {
@@ -469,12 +469,11 @@ class ChessState {
 				}
 			}
 		}
-		System.out.println("Should not be getting here that damn soon");
 		return true;
 	}
 	public boolean blackWins() {
 		for(int j = 7; j >= 0; j--) {
-			for(int i = 0; j < 7; i++) {
+			for(int i = 0; i < 8; i++) {
 				int p = this.getPiece(i, j);
 				if(p != None) {
 					if(this.isWhite(i, j) && p == King)
@@ -482,9 +481,8 @@ class ChessState {
 				}
 			}
 		}
-		System.out.println("Should not be getting here that damn soon");
 		return true;
-	} 
+	}
 
 	public static void main(String[] args) {
         // Able to accept arguments.
@@ -568,6 +566,10 @@ class ChessState {
 					int rowDest = Integer.parseInt(String.valueOf(str.charAt(3))) - 1;
 					s.move(colSrc, rowSrc, colDest, rowDest);
 				}
+				if(s.whiteWins()) {
+					System.out.println("White wins");
+					break;
+				}
 			}
 			else {
 				s.printBoard(System.out);
@@ -623,6 +625,10 @@ class ChessState {
 						colDest = 0;
 					int rowDest = Integer.parseInt(String.valueOf(str.charAt(3))) - 1;
 					s.move(colSrc, rowSrc, colDest, rowDest);
+				}
+				if(s.blackWins()) {
+					System.out.println("Black wins");
+					break;
 				}
 			}
 			counter++;
