@@ -1,5 +1,7 @@
+import java.awt.Toolkit;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 /// Represents the state of a chess game
@@ -18,6 +20,7 @@ class ChessState {
 	public static Random r = new Random();
 	int[] m_rows;
 
+	// TODO: This algorithm is not functioning correctly at the given moment. I'm able to beat the AI with depth level of 5.
 	public static int alphaBetaPruning(ChessState state, int depth, int alpha, int beta, boolean isMax) {
 		if(state == null) {
 			throw new IllegalArgumentException("The state is null, unable to run algorithm on invalid state");
@@ -25,19 +28,22 @@ class ChessState {
 		if(depth == 0) {
 			// Return the heuristic of the state.
 			// Random r = new Random();
+			r.setSeed(System.currentTimeMillis());
 			return state.heuristic(r);
 		}
-		if(isMax) {
+		if(isMax) { 
 			int best = Integer.MIN_VALUE;
 			ChessMoveIterator it = state.iterator(true); // if true, checks for white piece.
 			ChessState.ChessMove m;
+			String s = "White" + depth;
 			while(it.hasNext()) {
 				ChessState childState = new ChessState(state);
 				m = it.next();
-				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
-				int h = childState.heuristic(r);
-				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
+				childState.move(m.xSource, m.ySource, m.xDest, m.yDest); // Makes the move.
+				// int h = childState.heuristic(r);
+				best = Math.max(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax)); // Continue search the game tree.
 				alpha = Math.max(alpha, best);
+				// childState = new ChessState(state);
 				if(alpha >= beta)
 					break;
 			}
@@ -47,46 +53,59 @@ class ChessState {
 			int best = Integer.MAX_VALUE;
 			ChessMoveIterator it = state.iterator(false); // Checks for black piece.
 			ChessState.ChessMove m;
+			String s = "Black" + depth;
 			while(it.hasNext()) {
 				m = it.next();
 				ChessState childState = new ChessState(state);
-				childState.move(m.xSource, m.ySource, m.xDest, m.yDest);
-				int h = childState.heuristic(r);
-				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax));
+				childState.move(m.xSource, m.ySource, m.xDest, m.yDest); // Makes the move.
+				// int h = childState.heuristic(r);
+				best = Math.min(best, alphaBetaPruning(childState, depth-1, alpha, beta, !isMax)); // Continue searching the game tree.
 				beta = Math.min(beta, best);
+				//childState = new ChessState(state);
 				if(alpha >= beta)
 					break;
 			}
 			return best;
 		}
 	}
-	// public static int[] findBestMove(ChessState state, int depth) {
-	// 	// From the current State, get the best piece to move.
-	// 	// Return the x cord, y cord, for the place you want to move.
-	// 	/* INITIAL CALL */
-	// 	int [] bestMove = new int[4]; // {1, 1, 0, 2}
-	// 	for(int i = 0; i < bestMove.length; i++) {
-	// 		bestMove[i] = -1;
-	// 	}
-	// 	 // alphaBetaPruning(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true); // Calling from white standpoint.
-	// 	return bestMove;
-	// }
 	public static ChessState.ChessMove findBestMove(ChessState state, int depth, boolean isWhite) {
-		int maxMove = Integer.MIN_VALUE;
-		ChessMoveIterator it = state.iterator(isWhite);
-		ChessMove bestMove = new ChessMove();
-		ChessMove testMove = new ChessMove();
-		while(it.hasNext()) {
-			ChessState temp = new ChessState(state);
-			testMove = it.next();
-			temp.move(testMove.xSource, testMove.ySource, testMove.xDest, testMove.yDest);
-			int testVal = temp.alphaBetaPruning(temp, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, isWhite);
-			if(testVal > maxMove) {
-				bestMove = testMove;
-				maxMove = testVal;
+		if(isWhite) {
+			int maxMove = Integer.MIN_VALUE;
+			ChessMoveIterator it = state.iterator(true);
+			ChessMove bestMove = new ChessMove();
+			ChessMove testMove = new ChessMove();
+			String s = "White" + depth;
+			//ChessState temp = new ChessState(state);
+			while(it.hasNext()) {
+				ChessState temp = new ChessState(state);
+				testMove = it.next();
+				temp.move(testMove.xSource, testMove.ySource, testMove.xDest, testMove.yDest);
+				int testVal = alphaBetaPruning(temp, depth-1, Integer.MIN_VALUE, Integer.MAX_VALUE, !isWhite);
+				if(testVal > maxMove) {
+					bestMove = testMove;
+					maxMove = testVal;
+				}
 			}
+			return bestMove;
 		}
-		return bestMove;
+		else {
+			int minMove = Integer.MAX_VALUE;
+			ChessMoveIterator it = state.iterator(false);
+			ChessMove bestMove = new ChessMove();
+			ChessMove testMove = new ChessMove();
+			String s = "Black" + depth;
+			while(it.hasNext()) {
+				ChessState temp = new ChessState(state);
+				testMove = it.next();
+				temp.move(testMove.xSource, testMove.ySource, testMove.xDest, testMove.yDest);
+				int testVal = alphaBetaPruning(temp, depth-1, Integer.MIN_VALUE, Integer.MAX_VALUE, !isWhite);
+				if(testVal < minMove) {
+					bestMove = testMove;
+					minMove = testVal;
+				}
+			}
+			return bestMove;
+		}
 	}
 
 	ChessState() {
@@ -338,18 +357,18 @@ class ChessState {
 	/// ended the game.
 	boolean move(int xSrc, int ySrc, int xDest, int yDest) {
 		if(xSrc < 0 || xSrc >= 8 || ySrc < 0 || ySrc >= 8) {
-			System.out.println("xSrc: " + xSrc);
-			System.out.println("ySrc: " + ySrc);
 			throw new RuntimeException("out of range");
 		}
 		if(xDest < 0 || xDest >= 8 || yDest < 0 || yDest >= 8)
 			throw new RuntimeException("out of range");
 		int target = getPiece(xDest, yDest);
 		int p = getPiece(xSrc, ySrc);
-		if(p == None)
+		if(p == None) {
 			throw new RuntimeException("There is no piece in the source location");
-		if(target != None && isWhite(xSrc, ySrc) == isWhite(xDest, yDest))
+		}
+		if(target != None && isWhite(xSrc, ySrc) == isWhite(xDest, yDest)) {
 			throw new RuntimeException("It is illegal to take your own piece");
+		}
 		if(p == Pawn && (yDest == 0 || yDest == 7))
 			p = Queen; // a pawn that crosses the board becomes a queen
 		boolean white = isWhite(xSrc, ySrc);
@@ -500,6 +519,16 @@ class ChessState {
 		}
 		return true;
 	}
+	public static int getIteratorSize(ChessState state, boolean isWhite) {
+		ChessMoveIterator it = state.iterator(isWhite);
+		ChessMove testMove;
+		ArrayList<ChessMove> moveList = new ArrayList<>();
+		while(it.hasNext()) {
+			testMove = it.next();
+			moveList.add(testMove);
+		}
+		return moveList.size();
+	}
 
 	public static void main(String[] args) {
         // Able to accept arguments.
@@ -523,10 +552,7 @@ class ChessState {
 		ChessState s = new ChessState();
 		s.resetBoard();
 		Scanner reader = new Scanner(System.in);
-		System.out.println(alphaBetaPruning(s, 5, Integer.MIN_VALUE, Integer.MAX_VALUE, true));
 		int counter = 0;
-		boolean whiteWins = false;
-		boolean blackWins = false;
 		while(true) {
 			if(counter % 2 == 0) {
 				// First player's turn
@@ -536,9 +562,14 @@ class ChessState {
 					// Call ABPruning make isMax true, because calling from white standpoint.
 					// int[] moves = findBestMove(s, depthFirstAI);
 					// s.move(moves[0], moves[1], moves[2], moves[3]);
-					ChessMove moveForFirstPlayer = findBestMove(s, depthFirstAI, true);
-					System.out.println("White turn");
+					ChessMove moveForFirstPlayer = findBestMove(s, depthFirstAI, true); // True meaning the piece perspective is white.
+					System.out.println("White turn: " + counter);
+					try {
 					s.move(moveForFirstPlayer.xSource, moveForFirstPlayer.ySource, moveForFirstPlayer.xDest, moveForFirstPlayer.yDest);
+					} catch(RuntimeException e) {
+						System.out.println("Black wins");
+						break;
+					}
 				}
 				else if(depthFirstAI == 0) {
 					System.out.println("Please input the piece location, and the location you want to move it to (White Player)");
@@ -591,17 +622,25 @@ class ChessState {
 					System.out.println("White wins");
 					break;
 				}
+				else if(s.blackWins()) {
+					System.out.println("Black wins");
+					break;
+				}
 			}
 			else {
 				s.printBoard(System.out);
 				System.out.println();
 				if(depthSecondAI > 0) {
 					// int[] moves = findBestMove(s, depthSecondAI);
-					ChessMove moveForSecondPlayer = findBestMove(s, depthSecondAI, false);
-					System.out.println("Black turn");
+					ChessMove moveForSecondPlayer = findBestMove(s, depthSecondAI, false); // False meaning the piece perspective is black
+					System.out.println("Black turn " + (counter-1));
+					try {
 					s.move(moveForSecondPlayer.xSource, moveForSecondPlayer.ySource, moveForSecondPlayer.xDest, moveForSecondPlayer.yDest);
-					// s.move(moves[0], moves[1], moves[2], moves[3]);
-					// Call ABPruning, calling from black piece standpoint.
+					} catch(RuntimeException e)
+					{
+						System.out.println("White wins");
+						break;
+					}
 				}
 				else if(depthSecondAI == 0) {
 					System.out.println("Please input the piece location, and the location you want to move it to (Black Player)");
@@ -654,8 +693,15 @@ class ChessState {
 					System.out.println("Black wins");
 					break;
 				}
+				else if(s.whiteWins()) {
+					System.out.println("White wins");
+					break;
+				}
 			}
 			counter++;
 		}
+		s.printBoard(System.out);
+		reader.close();
+		Toolkit.getDefaultToolkit().beep(); // Indicates when game is over.
 	}
 }
